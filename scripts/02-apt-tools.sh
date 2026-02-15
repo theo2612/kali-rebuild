@@ -69,6 +69,10 @@ print_header "APT Pentest Tools"
 # SECTION is the label that appears in log output and the summary table.
 SECTION="APT"
 
+# Initialise this section in the results tracker so it appears in the
+# summary even if no packages are processed.
+SECTION_RESULTS["$SECTION"]="PASS"
+
 # PACKAGE_LIST points to the file containing one package name per line.
 # REPO_DIR is set by lib.sh and points to the repository root.
 PACKAGE_LIST="${REPO_DIR}/lists/apt-packages.txt"
@@ -108,7 +112,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     # [[ -z "${line// /}" ]] -- test for empty/whitespace-only string.
     # ${line// /} removes all spaces.  If nothing remains, skip the line.
     # We also handle tabs by first converting them to spaces.
-    local_trimmed="${line//[$'\t'/ /]/ }"
+    # Replace tabs with spaces first, then check if anything remains.
+    local_trimmed="${line//$'\t'/ }"
     if [[ -z "${local_trimmed// /}" ]]; then
         # Blank line or comment-only line -- skip to the next iteration.
         continue

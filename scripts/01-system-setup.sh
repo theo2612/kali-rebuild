@@ -151,10 +151,15 @@ run_cmd "$SECTION" "Install base packages" \
 # pipx installs Python tools into ~/.local/bin.  "pipx ensurepath" adds that
 # directory to $PATH in the user's shell config so the tools can be found.
 # This is safe to run multiple times -- it only adds the entry if missing.
-log_info "$SECTION" "Configuring pipx PATH..."
+#
+# IMPORTANT: We run this as the REAL user (not root) because pipx ensurepath
+# modifies the user's shell config (~/.bashrc, ~/.zshrc).  If we ran it as
+# root, it would modify /root/.bashrc instead of /home/brad/.bashrc.
+REAL_USER="${SUDO_USER:-$USER}"
+log_info "$SECTION" "Configuring pipx PATH for ${REAL_USER}..."
 
 run_cmd "$SECTION" "pipx ensurepath" \
-    pipx ensurepath
+    sudo -u "$REAL_USER" pipx ensurepath
 
 # ---- Summary ---------------------------------------------------------------
 # print_summary reads the SECTION_RESULTS table and FAILURES list that run_cmd

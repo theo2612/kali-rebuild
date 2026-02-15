@@ -125,7 +125,6 @@ ike-scan
 iodine
 miredo
 mosh
-nbtscan
 netcat-traditional
 netdiscover
 netmask

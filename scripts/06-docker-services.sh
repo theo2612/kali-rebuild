@@ -27,17 +27,12 @@
 #   password: BH_PASSWORD=$(openssl rand -base64 24).  The inner command
 #   (openssl rand) runs first, its output becomes the value of BH_PASSWORD.
 #
-# eval echo ~username -- expanding another user's home directory
-#   The tilde (~) only expands to a home directory when it appears literally
-#   at the start of a word.  When the username is in a variable, ~ does not
-#   expand automatically.  We use eval to force a second round of parsing:
-#     eval echo "~${SUDO_USER}"
-#   First, bash substitutes $SUDO_USER (e.g. "brad"), producing:
-#     eval echo ~brad
-#   Then eval re-parses that string, and now ~brad is a literal tilde-
-#   username at the start of a word, so bash expands it to /home/brad.
-#   CAUTION: eval can be dangerous with untrusted input because it executes
-#   arbitrary code.  Here SUDO_USER is set by sudo itself, so it is safe.
+# getent passwd for resolving a user's home directory
+#   getent queries system databases (like /etc/passwd).  The output format is:
+#     username:x:uid:gid:full_name:home_dir:shell
+#   We pipe to "cut -d: -f6" to extract just the home directory (field 6).
+#   This is safer than "eval echo ~user" because eval can execute arbitrary
+#   code if the variable contains shell metacharacters.
 #
 # sed for text replacement
 #   sed (Stream EDitor) reads input line by line and applies transformations.
@@ -111,7 +106,10 @@ print_header "Docker Services"
 # This is more reliable than hardcoding /home/$SUDO_USER because some
 # systems place home directories elsewhere (e.g. /usr/home/ on FreeBSD).
 REAL_USER="${SUDO_USER:-$(whoami)}"
-REAL_HOME=$(eval echo "~${REAL_USER}")
+# Look up the user's home directory from the system password database.
+# getent passwd returns a colon-delimited record; field 6 is the home directory.
+# This is safer than "eval echo ~user" because it avoids eval's code execution risks.
+REAL_HOME="$(getent passwd "$REAL_USER" | cut -d: -f6)"
 
 log_info "$SECTION" "Real user: ${REAL_USER}, home: ${REAL_HOME}"
 

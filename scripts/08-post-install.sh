@@ -125,14 +125,11 @@ print_header "Post-Install Verification"
 #   - If SUDO_USER is unset or empty (i.e. not running under sudo), fall
 #     back to $(whoami), which prints the current username.
 #
-# eval echo "~${REAL_USER}" resolves the tilde (~) for ANY user.
-#   - ~brad expands to /home/brad
-#   - ~root expands to /root
-# The eval is needed because tilde expansion normally only happens for the
-# CURRENT user; to expand it for an arbitrary username stored in a variable,
-# we need eval to re-process the expression.
+# Look up the user's home directory from the system password database.
+# getent passwd returns a colon-delimited record; field 6 is the home directory.
+# This is safer than "eval echo ~user" and works consistently across all setups.
 REAL_USER="${SUDO_USER:-$(whoami)}"
-REAL_HOME=$(eval echo "~${REAL_USER}")
+REAL_HOME="$(getent passwd "$REAL_USER" | cut -d: -f6)"
 
 log_info "$SECTION" "Verifying installation for user: ${REAL_USER}"
 log_info "$SECTION" "Home directory: ${REAL_HOME}"

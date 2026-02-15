@@ -45,6 +45,15 @@ BLS_ORG="https://github.com/blacklanternsecurity"
 # top-level directory of this repository.
 TOOLS_FILE="${REPO_DIR}/lists/bls-tools.txt"
 
+# ---- Determine the real user ------------------------------------------------
+# This script runs as root (via sudo), but pipx tools should be installed for
+# the real user, not root.  sudo -u runs commands as the specified user.
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME="$(getent passwd "$REAL_USER" | cut -d: -f6)"
+
+# Initialise this section so it appears in the summary table.
+SECTION_RESULTS["BLS"]="PASS"
+
 # ---- Verify the tool list exists -------------------------------------------
 if [[ ! -f "$TOOLS_FILE" ]]; then
     log_fail "BLS" "Tool list not found: ${TOOLS_FILE}"
@@ -113,7 +122,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             # package up on PyPI.  This ensures we get the BLS fork, not the
             # upstream/public version.
             if run_cmd "BLS" "pipx install ${repo}" \
-                pipx install "git+${BLS_ORG}/${repo}.git"; then
+                sudo -u "$REAL_USER" pipx install "git+${BLS_ORG}/${repo}.git"; then
                 success_count=$((success_count + 1))
             else
                 fail_count=$((fail_count + 1))
@@ -130,8 +139,9 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             # different naming convention (e.g. with version numbers or
             # different arch strings).  Check the repo's Releases page if
             # the download fails.
+            # Use REAL_HOME instead of ~ because ~ expands to /root under sudo.
             if run_cmd "BLS" "Download ${repo} binary" \
-                bash -c "mkdir -p ~/tools/${repo} && wget -qO ~/tools/${repo}/${repo} \"${BLS_ORG}/${repo}/releases/latest/download/${repo}-linux-amd64\" && chmod +x ~/tools/${repo}/${repo}"; then
+                bash -c "mkdir -p '${REAL_HOME}/tools/${repo}' && wget -qO '${REAL_HOME}/tools/${repo}/${repo}' '${BLS_ORG}/${repo}/releases/latest/download/${repo}-linux-amd64' && chmod +x '${REAL_HOME}/tools/${repo}/${repo}' && chown -R '${REAL_USER}:${REAL_USER}' '${REAL_HOME}/tools/${repo}'"; then
                 success_count=$((success_count + 1))
             else
                 fail_count=$((fail_count + 1))

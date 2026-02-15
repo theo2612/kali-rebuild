@@ -109,18 +109,15 @@ print_header "Configs & Dotfiles"
 #     for example during testing.
 REAL_USER="${SUDO_USER:-$(whoami)}"
 
-# eval echo "~${REAL_USER}" resolves the user's home directory.
+# Look up the user's home directory from the system password database.
+# getent passwd returns a colon-delimited record like:
+#   brad:x:1000:1000:Brad Theodore:/home/brad:/usr/bin/zsh
+# We use cut -d: -f6 to extract the 6th field (the home directory).
 #
-# Why eval?  In bash, tilde expansion (~ -> /home/brad) only happens BEFORE
-# variable expansion.  So echo "~${REAL_USER}" would literally print
-# "~brad", not "/home/brad".  By wrapping it in eval, we force the shell to
-# re-parse the string after the variable has been substituted, which triggers
-# tilde expansion on the second pass.
-#
-# Example: REAL_USER=brad
-#   Without eval:  echo "~brad"  ->  ~brad       (literal tilde, NOT useful)
-#   With eval:     eval echo "~brad"  ->  /home/brad  (resolved path)
-REAL_HOME=$(eval echo "~${REAL_USER}")
+# This is safer and more reliable than "eval echo ~${REAL_USER}" because:
+#   - eval can execute arbitrary code if the variable contains shell metacharacters
+#   - getent reads directly from the system database (works even on unusual setups)
+REAL_HOME="$(getent passwd "$REAL_USER" | cut -d: -f6)"
 
 log_info "$SECTION" "Real user: ${REAL_USER}"
 log_info "$SECTION" "Home directory: ${REAL_HOME}"

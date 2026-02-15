@@ -79,6 +79,18 @@ fi
 
 log_ok "PIPX" "pipx found at $(command -v pipx)"
 
+# ---- Determine the real user ------------------------------------------------
+# This script runs as root (via sudo), but pipx tools should be installed for
+# the REAL user, not root.  If we ran `pipx install` as root, the tools would
+# end up in /root/.local/bin instead of /home/brad/.local/bin.
+#
+# SUDO_USER is automatically set by sudo to the name of the user who invoked it.
+# We use sudo -u to run pipx as that user.
+REAL_USER="${SUDO_USER:-$USER}"
+
+# Initialise this section so it appears in the summary table.
+SECTION_RESULTS["PIPX"]="PASS"
+
 # ---------------------------------------------------------------------------
 # Locate the tools list
 # ---------------------------------------------------------------------------
@@ -130,7 +142,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     # We use `|| true` after run_cmd so that a failed install does not
     # trigger `set -e` and kill the entire script.  We want to continue
     # installing the remaining tools even if one fails.
-    if run_cmd "PIPX" "Installing ${tool}" pipx install "$tool"; then
+    if run_cmd "PIPX" "Installing ${tool}" sudo -u "$REAL_USER" pipx install "$tool"; then
         success_count=$((success_count + 1))
     else
         fail_count=$((fail_count + 1))
