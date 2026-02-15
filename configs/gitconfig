@@ -1,0 +1,5 @@
+[user]
+    name = Brad Theodore
+    email = brad.theodore@gmail.com
+[init]
+    defaultBranch = main

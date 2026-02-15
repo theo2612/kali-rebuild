@@ -1,0 +1,1 @@
+deb [arch=amd64 signed-by=/etc/apt/keyrings/neo4j.gpg] https://debian.neo4j.com stable 5
