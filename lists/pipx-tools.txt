@@ -1,0 +1,9 @@
+# =============================================
+# Kali Rebuild - Public pipx Tools
+# =============================================
+# Python tools installed via pipx from PyPI.
+# BLS forks are in bls-tools.txt instead.
+# =============================================
+
+coercer
+adidnsdump

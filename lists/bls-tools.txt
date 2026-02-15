@@ -1,0 +1,22 @@
+# =============================================
+# Kali Rebuild - BLS Fork Tools
+# =============================================
+# Tools from github.com/blacklanternsecurity
+# Format: repo-name|install-method|notes
+# Install methods: pipx, binary
+# =============================================
+
+bbot|pipx|
+bbot-server|pipx|
+impacket|pipx|
+certipy|pipx|
+ldap_shell|pipx|
+bad-secrets|pipx|
+netexec|pipx|
+webcap|pipx|
+trevorspray|pipx|
+responder|pipx|replaces apt version
+itwasalladream|pipx|
+pypykatz|pipx|
+crackmapexec|pipx|
+kerbrute|binary|Go binary - download from GitHub releases

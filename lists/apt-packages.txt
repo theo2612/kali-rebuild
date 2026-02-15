@@ -1,0 +1,211 @@
+# =============================================
+# Kali Rebuild - APT Package List
+# =============================================
+# Curated list of packages to install via apt.
+# Base system packages and libraries are excluded
+# (they come with the Kali ISO or as dependencies).
+# One package per line. Lines starting with # are
+# comments.
+# =============================================
+
+# --- Reconnaissance and OSINT ---
+amass
+dnsenum
+dnsrecon
+dmitry
+fierce
+maltego
+masscan
+nmap
+recon-ng
+spiderfoot
+theharvester
+wafw00f
+whatweb
+zenmap
+
+# --- Web Application Testing ---
+burpsuite
+commix
+davtest
+dirb
+dirbuster
+ffuf
+gobuster
+nikto
+skipfish
+sqlmap
+wfuzz
+wpscan
+
+# --- Vulnerability Analysis ---
+exploitdb
+legion
+
+# --- Password Attacks ---
+cewl
+crunch
+hashcat
+hashcat-utils
+hashid
+hash-identifier
+hydra
+john
+maskprocessor
+ncrack
+ophcrack
+ophcrack-cli
+pipal
+rsmangler
+statsprocessor
+
+# --- Wireless ---
+aircrack-ng
+bully
+fern-wifi-cracker
+hcxtools
+kismet
+pixiewps
+reaver
+wifite
+
+# --- Exploitation ---
+metasploit-framework
+msfpc
+powershell-empire
+
+# --- Post-Exploitation ---
+evil-winrm
+laudanum
+mimikatz
+passing-the-hash
+peass
+powersploit
+unix-privesc-check
+webshells
+weevely
+
+# --- Sniffing and Spoofing ---
+dnschef
+macchanger
+nbtscan
+netsed
+netsniff-ng
+wireshark
+
+# --- Forensics ---
+autopsy
+binwalk
+bulk-extractor
+chntpw
+creddump7
+foremost
+guymager
+magicrescue
+pdf-parser
+pdfid
+samdump2
+scalpel
+sleuthkit
+testdisk
+
+# --- Reporting ---
+faraday
+
+# --- Networking ---
+arp-scan
+cadaver
+cifs-utils
+cryptcat
+dns2tcp
+dnsmasq
+fping
+hping3
+ike-scan
+iodine
+miredo
+mosh
+nbtscan
+netcat-traditional
+netdiscover
+netmask
+nfs-kernel-server
+ngrep
+onesixtyone
+openvpn
+proxychains4
+proxytunnel
+ptunnel
+pwnat
+rebind
+redsocks
+samba
+samba-common-bin
+sbd
+sendemail
+snmp
+snmpcheck
+snmpd
+socat
+spike
+sslh
+ssldump
+sslscan
+sslsplit
+sslyze
+stunnel4
+swaks
+tcpick
+tcpreplay
+tftp-hpa
+udptunnel
+vpnc
+wordlists
+
+# --- Utilities and Applications ---
+apache2
+chromium
+default-mysql-server
+docker-compose
+docker.io
+dos2unix
+golang
+gpp-decrypt
+htop
+libreoffice
+neo4j
+php
+php-mysql
+pipx
+python3-pip
+python3-virtualenv
+qemu-system-x86
+radare2
+remmina
+screen
+signal-desktop
+sublime-text
+sqlitebrowser
+terminator
+tmux
+tmux-plugin-manager
+vim
+virt-manager
+
+# --- Build Dependencies ---
+clang
+libcurl4-openssl-dev
+libnetfilter-queue-dev
+libnfnetlink-dev
+libnl-3-dev
+libnl-genl-3-dev
+libpcap-dev
+libssl-dev
+libusb-1.0-0-dev
+nasm
+python3-bs4
+python3-lxml
+python3-openssl
+python3-requests
+python3-scapy
+zlib1g-dev
