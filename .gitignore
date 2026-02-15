@@ -1,0 +1,7 @@
+# Runtime logs - never commit these
+logs/
+
+# OS junk
+.DS_Store
+*.swp
+*~
