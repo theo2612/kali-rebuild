@@ -125,11 +125,13 @@ TOOLS_DIR="${REAL_HOME}/tools"
 # needed."  We do this as the real user so the directory is not owned by root.
 log_info "$SECTION" "Ensuring ${TOOLS_DIR} exists..."
 
+# Create as root (simpler) and chown afterward.
 if [[ -d "$TOOLS_DIR" ]]; then
     log_skip "$SECTION" "Create ${TOOLS_DIR}" "already exists"
 else
     run_cmd "$SECTION" "Create ${TOOLS_DIR}" \
-        sudo -u "$REAL_USER" mkdir -p "$TOOLS_DIR"
+        mkdir -p "$TOOLS_DIR"
+    chown "${REAL_USER}:${REAL_USER}" "$TOOLS_DIR"
 fi
 
 # ===========================================================================
@@ -201,18 +203,13 @@ for (( i=0; i<tool_count; i++ )); do
         log_skip "$SECTION" "Clone ${name}" "already exists"
         skip_count=$((skip_count + 1))
     else
-        # ---- Clone as the real user ----------------------------------------
-        # `sudo -u "$REAL_USER"` runs the git-clone as the non-root user.
-        # This ensures the cloned files are owned by brad (or whoever ran
-        # sudo), not by root.  Without this, the user would need to chown
-        # the entire ~/tools/ tree after every run.
-        #
-        # git clone <url> <destination>
-        #   --depth 1 could be added here to save bandwidth (shallow clone),
-        #   but we do a full clone so the user can browse the commit history
-        #   for educational purposes.
+        # ---- Clone the repository ---------------------------------------------
+        # We clone as root (simpler and avoids permission issues with
+        # sudo -u + git) and fix ownership afterward with chown.
         if run_cmd "$SECTION" "Clone ${name}" \
-            sudo -u "$REAL_USER" git clone "$url" "$tool_dir"; then
+            git clone "$url" "$tool_dir"; then
+            # Fix ownership so the real user can modify the cloned files.
+            chown -R "${REAL_USER}:${REAL_USER}" "$tool_dir"
             success_count=$((success_count + 1))
         else
             fail_count=$((fail_count + 1))

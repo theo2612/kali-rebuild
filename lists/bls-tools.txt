@@ -15,8 +15,8 @@ bad-secrets|pipx|
 netexec|pipx|
 webcap|pipx|
 trevorspray|pipx|
-responder|pipx|replaces apt version
+responder|clone|not a pip package - clone and run directly
 itwasalladream|pipx|
 pypykatz|pipx|
 crackmapexec|pipx|
-kerbrute|binary|Go binary - download from GitHub releases
+kerbrute|clone|Go project - clone and build with go install

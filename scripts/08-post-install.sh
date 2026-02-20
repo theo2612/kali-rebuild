@@ -157,8 +157,13 @@ log_info "$SECTION" "Home directory: ${REAL_HOME}"
 check_cmd() {
     local tool="$1"
 
+    # Check the system PATH first, then also check the user's ~/.local/bin
+    # (where pipx installs tools).  When running under sudo, ~/.local/bin
+    # is NOT on root's PATH, so command -v alone would miss pipx tools.
     if command -v "$tool" &>/dev/null; then
         log_ok "$SECTION" "${tool} found"
+    elif [[ -x "${REAL_HOME}/.local/bin/${tool}" ]]; then
+        log_ok "$SECTION" "${tool} found (in ~/.local/bin)"
     else
         log_fail "$SECTION" "${tool} NOT found"
     fi

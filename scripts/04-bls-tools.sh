@@ -61,6 +61,9 @@ if [[ ! -f "$TOOLS_FILE" ]]; then
     exit 1
 fi
 
+# ---- Ensure ~/tools/ exists for clone method --------------------------------
+mkdir -p "${REAL_HOME}/tools"
+
 # ---- Counters for the summary ---------------------------------------------
 success_count=0
 fail_count=0
@@ -129,19 +132,21 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             fi
             ;;
 
-        binary)
-            # For binary releases we download a pre-compiled binary from
-            # the repo's GitHub Releases page into ~/tools/<repo>/.
+        clone)
+            # Some BLS tools are not pip-installable Python packages.  For
+            # these we clone the repo into ~/tools/<repo>/ and run them
+            # directly from the source tree.
             #
-            # NOTE: The download URL assumes the release artifact is named
-            # "${repo}-linux-amd64".  This works for kerbrute but may need
-            # adjustment for other repos whose release binaries follow a
-            # different naming convention (e.g. with version numbers or
-            # different arch strings).  Check the repo's Releases page if
-            # the download fails.
-            # Use REAL_HOME instead of ~ because ~ expands to /root under sudo.
-            if run_cmd "BLS" "Download ${repo} binary" \
-                bash -c "mkdir -p '${REAL_HOME}/tools/${repo}' && wget -qO '${REAL_HOME}/tools/${repo}/${repo}' '${BLS_ORG}/${repo}/releases/latest/download/${repo}-linux-amd64' && chmod +x '${REAL_HOME}/tools/${repo}/${repo}' && chown -R '${REAL_USER}:${REAL_USER}' '${REAL_HOME}/tools/${repo}'"; then
+            # We clone as root (simpler than sudo -u with git) and then
+            # chown the directory to the real user afterward.
+            local clone_dir="${REAL_HOME}/tools/${repo}"
+            if [[ -d "$clone_dir" ]]; then
+                log_skip "BLS" "Clone ${repo}" "already exists"
+                skip_count=$((skip_count + 1))
+            elif run_cmd "BLS" "Clone ${repo}" \
+                git clone "${BLS_ORG}/${repo}.git" "$clone_dir"; then
+                # Fix ownership so the real user can modify the cloned files.
+                chown -R "${REAL_USER}:${REAL_USER}" "$clone_dir"
                 success_count=$((success_count + 1))
             else
                 fail_count=$((fail_count + 1))

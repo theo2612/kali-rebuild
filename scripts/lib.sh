@@ -59,11 +59,11 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # when stdout is connected to a terminal (not piped to a file).  The test
 # [[ -t 1 ]] checks file descriptor 1 (stdout).
 if [[ -t 1 ]]; then
-    GREEN='\e[32m'
-    RED='\e[31m'
-    YELLOW='\e[33m'
-    BOLD='\e[1m'
-    RESET='\e[0m'
+    GREEN=$'\e[32m'
+    RED=$'\e[31m'
+    YELLOW=$'\e[33m'
+    BOLD=$'\e[1m'
+    RESET=$'\e[0m'
 else
     GREEN=''
     RED=''
