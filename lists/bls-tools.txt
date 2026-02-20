@@ -18,5 +18,4 @@ trevorspray|pipx|
 responder|clone|not a pip package - clone and run directly
 itwasalladream|pipx|
 pypykatz|pipx|
-crackmapexec|pipx|
 kerbrute|clone|Go project - clone and build with go install

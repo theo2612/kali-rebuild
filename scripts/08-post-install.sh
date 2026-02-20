@@ -262,7 +262,6 @@ check_cmd "nxc"
 check_cmd "certipy"
 check_cmd "trevorspray"
 check_cmd "pypykatz"
-check_cmd "crackmapexec"
 
 
 # ===========================================================================
