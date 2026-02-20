@@ -153,7 +153,6 @@ TOOL_NAMES=(
     "bloodyAD"        # Active Directory privilege escalation & persistence via LDAP
     "beanshooter"     # Java Management Extensions (JMX) exploitation tool
     "noPac"           # CVE-2021-42278/CVE-2021-42287 -- AD privilege escalation
-    "hawktrace"       # Internal / custom BLS reconnaissance tool
 )
 
 TOOL_URLS=(
@@ -161,7 +160,6 @@ TOOL_URLS=(
     "https://github.com/CravateRouge/bloodyAD"
     "https://github.com/qtc-de/beanshooter"
     "https://github.com/Ridter/noPac"
-    "https://github.com/blacklanternsecurity/hawktrace"
 )
 
 # ===========================================================================

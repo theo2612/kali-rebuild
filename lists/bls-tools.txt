@@ -3,7 +3,7 @@
 # =============================================
 # Tools from github.com/blacklanternsecurity
 # Format: repo-name|install-method|notes
-# Install methods: pipx, binary
+# Install methods: pipx, clone
 # =============================================
 
 bbot|pipx|

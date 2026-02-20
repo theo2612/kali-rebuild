@@ -280,7 +280,6 @@ check_dir "${REAL_HOME}/tools/CVE-2020-1472"   "CVE-2020-1472 (ZeroLogon)"
 check_dir "${REAL_HOME}/tools/bloodyAD"         "bloodyAD"
 check_dir "${REAL_HOME}/tools/beanshooter"      "beanshooter"
 check_dir "${REAL_HOME}/tools/noPac"            "noPac"
-check_dir "${REAL_HOME}/tools/hawktrace"        "hawktrace"
 
 
 # ===========================================================================

@@ -80,7 +80,7 @@ print_header "System Setup"
 log_info "$SECTION" "Adding Neo4j repository..."
 
 run_cmd "$SECTION" "Download Neo4j signing key" \
-    bash -c 'wget -qO- https://debian.neo4j.com/neotechnology.gpg.key | gpg --dearmor -o /etc/apt/keyrings/neo4j.gpg'
+    bash -c 'wget -qO- https://debian.neo4j.com/neotechnology.gpg.key | gpg --dearmor --yes -o /etc/apt/keyrings/neo4j.gpg'
 
 run_cmd "$SECTION" "Copy Neo4j sources list" \
     cp "${REPO_DIR}/configs/apt/sources.list.d/neo4j.list" /etc/apt/sources.list.d/
@@ -90,7 +90,7 @@ run_cmd "$SECTION" "Copy Neo4j sources list" \
 log_info "$SECTION" "Adding Signal Desktop repository..."
 
 run_cmd "$SECTION" "Download Signal signing key" \
-    bash -c 'wget -qO- https://updates.signal.org/desktop/apt/keys.asc | gpg --dearmor -o /usr/share/keyrings/signal-desktop-keyring.gpg'
+    bash -c 'wget -qO- https://updates.signal.org/desktop/apt/keys.asc | gpg --dearmor --yes -o /usr/share/keyrings/signal-desktop-keyring.gpg'
 
 run_cmd "$SECTION" "Copy Signal sources file" \
     cp "${REPO_DIR}/configs/apt/sources.list.d/signal-desktop.sources" /etc/apt/sources.list.d/
@@ -100,7 +100,7 @@ run_cmd "$SECTION" "Copy Signal sources file" \
 log_info "$SECTION" "Adding Sublime Text repository..."
 
 run_cmd "$SECTION" "Download Sublime Text signing key" \
-    bash -c 'wget -qO- https://download.sublimetext.com/sublimehq-pub.gpg | gpg --dearmor -o /etc/apt/keyrings/sublimehq.gpg'
+    bash -c 'wget -qO- https://download.sublimetext.com/sublimehq-pub.gpg | gpg --dearmor --yes -o /etc/apt/keyrings/sublimehq.gpg'
 
 run_cmd "$SECTION" "Copy Sublime Text sources list" \
     cp "${REPO_DIR}/configs/apt/sources.list.d/sublime-text.list" /etc/apt/sources.list.d/

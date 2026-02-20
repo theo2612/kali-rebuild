@@ -130,9 +130,13 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     fi
 
     # ---- Install the package -----------------------------------------------
-    # (( total_count++ )) -- arithmetic increment.  Counts every package we
-    # attempt to install.
-    (( total_count++ ))
+    # Arithmetic increment.  Counts every package we attempt to install.
+    # NOTE: We use total_count=$((total_count + 1)) instead of (( total_count++ ))
+    # because the (( )) form returns the expression's value as an exit code.
+    # When total_count is 0, (( 0++ )) evaluates to 0 which means exit code 1
+    # (false in arithmetic context).  With set -e active, that kills the script!
+    # The $((expr)) form is used in an assignment, so the exit code is always 0.
+    total_count=$((total_count + 1))
 
     # run_cmd runs the command, logs output, and shows OK or FAIL on screen.
     # The -y flag auto-confirms prompts so the script runs unattended.
@@ -141,11 +145,11 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     # We use "|| true" to prevent set -e from killing the whole script when
     # a single package fails.  Instead we capture the failure and keep going.
     if run_cmd "$SECTION" "Installing ${package}" apt-get install -y -qq "$package"; then
-        # (( success_count++ )) -- the install succeeded, bump the counter.
-        (( success_count++ ))
+        # The install succeeded, bump the counter.
+        success_count=$((success_count + 1))
     else
-        # (( fail_count++ )) -- the install failed, bump the failure counter.
-        (( fail_count++ ))
+        # The install failed, bump the failure counter.
+        fail_count=$((fail_count + 1))
     fi
 
 done < "$PACKAGE_LIST"

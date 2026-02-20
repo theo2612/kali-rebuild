@@ -139,7 +139,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             #
             # We clone as root (simpler than sudo -u with git) and then
             # chown the directory to the real user afterward.
-            local clone_dir="${REAL_HOME}/tools/${repo}"
+            clone_dir="${REAL_HOME}/tools/${repo}"
             if [[ -d "$clone_dir" ]]; then
                 log_skip "BLS" "Clone ${repo}" "already exists"
                 skip_count=$((skip_count + 1))
