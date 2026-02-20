@@ -142,9 +142,16 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     # The -y flag auto-confirms prompts so the script runs unattended.
     # The -qq flag makes apt-get quiet -- less noise in the log file.
     #
-    # We use "|| true" to prevent set -e from killing the whole script when
-    # a single package fails.  Instead we capture the failure and keep going.
-    if run_cmd "$SECTION" "Installing ${package}" apt-get install -y -qq "$package"; then
+    # DEBIAN_FRONTEND=noninteractive is CRITICAL here.  Some packages (sslh,
+    # wireshark, kismet, etc.) pop up ncurses dialog boxes during install
+    # asking configuration questions.  The -y flag does NOT suppress those --
+    # it only handles apt's own "Do you want to continue?" prompt.  Without
+    # DEBIAN_FRONTEND=noninteractive, the dialog is invisible (swallowed by
+    # run_cmd's output capture) and the script hangs forever waiting for
+    # input that nobody can see.  Setting it to "noninteractive" tells
+    # debconf to silently accept the default answer for every question.
+    if run_cmd "$SECTION" "Installing ${package}" \
+        env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$package"; then
         # The install succeeded, bump the counter.
         success_count=$((success_count + 1))
     else
