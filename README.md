@@ -3,12 +3,25 @@
 Bash scripts to rebuild a fully configured Kali Linux pentest workstation from a
 fresh ISO install. Built for a Framework 13 laptop running Kali Rolling.
 
-After a fresh Kali install, two commands get the machine back to a working state:
+## Full rebuild steps
 
-```bash
-git clone git@github.com:<your-user>/kali-rebuild.git ~/kali-rebuild
-cd ~/kali-rebuild && sudo ./install.sh
-```
+1. **Flash the Kali ISO to USB**
+   - Download the latest installer from https://www.kali.org/get-kali/#kali-installer
+   - Flash it to a USB drive:
+     ```bash
+     sudo dd if=kali-linux-*.iso of=/dev/sdX bs=4M status=progress
+     ```
+     Replace `/dev/sdX` with your USB device (check with `lsblk`). On macOS/Windows, use [Balena Etcher](https://etcher.balena.io/).
+
+2. **Install Kali** -- Boot from USB, run the graphical installer. Use default partitioning or encrypted LVM for work machines.
+
+3. **Run the rebuild** -- Boot into your fresh Kali desktop, open a terminal:
+   ```bash
+   git clone https://github.com/theo2612/kali-rebuild.git ~/kali-rebuild
+   cd ~/kali-rebuild && sudo ./install.sh
+   ```
+
+4. **Complete manual steps** -- The script prints a checklist at the end (BurpSuite license, SSH keys, etc.).
 
 The install script handles everything: apt packages, pentest tools, dotfiles,
 shell configuration, and system settings. Failures are logged and summarized at
