@@ -11,7 +11,7 @@ bbot-server|pipx|
 impacket|pipx|
 certipy|pipx|
 ldap_shell|pipx|
-bad-secrets|pipx|
+badsecrets|pipx|
 netexec|pipx|
 webcap|pipx|
 trevorspray|pipx|
