@@ -164,6 +164,7 @@ wordlists
 # --- Utilities and Applications ---
 apache2
 chromium
+code
 default-mysql-server
 docker-compose
 docker.io

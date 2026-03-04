@@ -105,6 +105,16 @@ run_cmd "$SECTION" "Download Sublime Text signing key" \
 run_cmd "$SECTION" "Copy Sublime Text sources list" \
     cp "${REPO_DIR}/configs/apt/sources.list.d/sublime-text.list" /etc/apt/sources.list.d/
 
+# ---- VS Code repository ---------------------------------------------------
+# VS Code is a code editor from Microsoft.
+log_info "$SECTION" "Adding VS Code repository..."
+
+run_cmd "$SECTION" "Download VS Code signing key" \
+    bash -c 'wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor --yes -o /usr/share/keyrings/microsoft.gpg'
+
+run_cmd "$SECTION" "Copy VS Code sources file" \
+    cp "${REPO_DIR}/configs/apt/sources.list.d/vscode.sources" /etc/apt/sources.list.d/
+
 # ===========================================================================
 # STEP 2: Update the package cache
 # ===========================================================================
@@ -160,6 +170,14 @@ log_info "$SECTION" "Configuring pipx PATH for ${REAL_USER}..."
 
 run_cmd "$SECTION" "pipx ensurepath" \
     sudo -u "$REAL_USER" pipx ensurepath
+
+# ---- Claude Code -----------------------------------------------------------
+# Claude Code is Anthropic's CLI tool for AI-assisted development.
+# The installer is a self-contained script that handles its own dependencies.
+log_info "$SECTION" "Installing Claude Code for ${REAL_USER}..."
+
+run_cmd "$SECTION" "Install Claude Code" \
+    sudo -u "$REAL_USER" bash -c 'curl -fsSL https://claude.ai/install.sh | bash'
 
 # ---- Summary ---------------------------------------------------------------
 # print_summary reads the SECTION_RESULTS table and FAILURES list that run_cmd
