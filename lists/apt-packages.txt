@@ -72,7 +72,6 @@ wifite
 # --- Exploitation ---
 metasploit-framework
 msfpc
-powershell-empire
 
 # --- Post-Exploitation ---
 evil-winrm
