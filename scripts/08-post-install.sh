@@ -331,7 +331,8 @@ log_info "$SECTION" "Checking configuration files..."
 check_file "${REAL_HOME}/.zshrc"     ".zshrc"
 check_file "${REAL_HOME}/.bashrc"    ".bashrc"
 check_file "${REAL_HOME}/.gitconfig" ".gitconfig"
-
+check_file "${REAL_HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/displays.xml"   "XFCE displays.xml"
+check_file "${REAL_HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml"  "XFCE xsettings.xml"
 
 # ===========================================================================
 # COUNT RESULTS

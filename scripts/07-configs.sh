@@ -220,7 +220,62 @@ else
 fi
 
 # ===========================================================================
-# STEP 4: Fix file ownership
+# STEP 4: Install XFCE display settings
+# ===========================================================================
+#
+# On a fresh Kali install, XFCE defaults to the panel's native resolution
+# with no scaling.  On a HiDPI laptop (2880x1920), this makes everything
+# tiny.  These config files restore our preferred scaling, resolution, and
+# font settings.
+#
+# The target directory is ~/.config/xfce4/xfconf/xfce-perchannel-xml/
+# which is where XFCE stores per-channel settings as XML files.  Unlike
+# shell dotfiles (which go directly in ~/), these live in a nested
+# directory structure, so we need to create the directory first.
+#
+# mkdir -p creates the directory AND any missing parent directories.
+# The -p flag means "no error if existing, make parent directories as
+# needed."  Without -p, mkdir fails if the parent does not exist.
+
+XFCE_CONF_DIR="${REAL_HOME}/.config/xfce4/xfconf/xfce-perchannel-xml"
+
+log_info "$SECTION" "Installing XFCE display settings..."
+
+# Create the target directory if it does not exist yet.
+# On a fresh install, ~/.config/xfce4/ may not exist until the user
+# logs into XFCE for the first time.  We create it ahead of time so
+# XFCE picks up our settings on first login.
+run_cmd "$SECTION" "Create XFCE config directory" \
+    mkdir -p "$XFCE_CONF_DIR"
+
+# XFCE_CONFIGS is an array of the config files we want to deploy.
+# Each entry is the filename as it appears in both the repo (configs/xfce4/)
+# and the target directory.  Unlike shell dotfiles, these do NOT get a
+# leading dot -- XFCE expects the plain filename.
+XFCE_CONFIGS=("displays.xml" "xsettings.xml")
+
+for config in "${XFCE_CONFIGS[@]}"; do
+    source_file="${REPO_DIR}/configs/xfce4/${config}"
+    target_file="${XFCE_CONF_DIR}/${config}"
+
+    if [[ ! -f "$source_file" ]]; then
+        log_skip "$SECTION" "Install ${config}" "source not found: ${source_file}"
+        continue
+    fi
+
+    if [[ -f "$target_file" ]]; then
+        run_cmd "$SECTION" "Backup ${config}" \
+            cp "$target_file" "${target_file}.bak"
+    else
+        log_info "$SECTION" "No existing ${config} to back up"
+    fi
+
+    run_cmd "$SECTION" "Install ${config}" \
+        cp "$source_file" "$target_file"
+done
+
+# ===========================================================================
+# STEP 5: Fix file ownership
 # ===========================================================================
 #
 # When this script runs under sudo, every file it creates or copies is owned
@@ -261,6 +316,16 @@ for config in "${ALL_CONFIGS[@]}"; do
             chown "${REAL_USER}:${REAL_USER}" "${target_file}.bak"
     fi
 done
+
+# ---- Fix ownership on the XFCE config directory and its contents ----------
+# chown -R applies the ownership change RECURSIVELY -- meaning it changes
+# the directory itself AND every file and subdirectory inside it.  This is
+# needed because we used mkdir -p above (which created directories as root)
+# and copied files into them (also as root).
+if [[ -d "${REAL_HOME}/.config/xfce4" ]]; then
+    run_cmd "$SECTION" "chown XFCE config directory" \
+        chown -R "${REAL_USER}:${REAL_USER}" "${REAL_HOME}/.config/xfce4"
+fi
 
 # ===========================================================================
 # Summary
