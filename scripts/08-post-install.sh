@@ -365,6 +365,8 @@ fi
 # printed in the summary at the end, ensuring nothing is forgotten.
 log_info "$SECTION" "Recording manual post-install steps..."
 
+add_manual_step "Log into Signal Desktop"
+add_manual_step "Log into Claude Code: run claude, then /login"
 add_manual_step "Activate BurpSuite Professional license"
 add_manual_step "Install Bitwarden extension in Firefox"
 add_manual_step "Log into Signal Desktop"
