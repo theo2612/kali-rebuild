@@ -9,7 +9,7 @@ for both VM testing and bare-metal installs on the Framework 13.
 2. **Language** -- **English**
 3. **Location** -- **United States**
 4. **Keyboard** -- **American English**
-5. **Hostname** -- **kali** (or your preferred name)
+5. **Hostname** -- **bls-wopr** (or your preferred name)
 6. **Domain** -- leave **blank**
 7. **Full name** -- **Brad Theodore**
 8. **Username** -- **theo**
@@ -18,8 +18,8 @@ for both VM testing and bare-metal installs on the Framework 13.
 11. **Partition disks** -- select **"Partition disks"** from the menu
 12. **Partitioning method** -- **"Guided - use entire disk and set up encrypted LVM"**
 13. **Select disk** -- pick the **internal drive** (NOT the USB)
-    - VM: `Virtual disk 1 (vda)`
     - Bare metal: `NVMe - WD_BLACK SN850X` (or similar)
+    - VM: `Virtual disk 1 (vda)`
 14. **Partition scheme** -- **"All files in one partition"**
 15. **Write changes to disk?** -- **Yes**
 16. **Erasing data** -- wait for it to finish
@@ -29,8 +29,8 @@ for both VM testing and bare-metal installs on the Framework 13.
 20. **Confirm write changes** -- **Yes**
 21. **Software selection** -- keep defaults: **Xfce + top10 + default tools**
 22. **GRUB boot loader** -- install to the **internal drive** (NOT the USB)
-    - VM: `/dev/vda`
     - Bare metal: `/dev/nvme0n1`
+    - VM: `/dev/vda`
 23. **Installation complete** -- **Continue** to reboot
 24. **Remove USB** (bare metal: pull it out; VM: fix boot order in virt-manager)
 25. **LUKS passphrase prompt** -- enter your encryption passphrase
