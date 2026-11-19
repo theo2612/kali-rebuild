@@ -318,7 +318,8 @@ run_script() {
 #   06 -- Docker Services:    Sets up BloodHound and other containers.  Needs
 #                              Docker from 01.
 #
-#   07 -- Configs & Dotfiles: Copies shell configs and gitconfig into ~/.
+#   07 -- Configs & Dotfiles: Installs the dotfiles repo into ~/ and
+#                              XFCE display/font settings.
 #                              Runs late so it does not get overwritten by
 #                              package installs.
 #

@@ -328,9 +328,13 @@ fi
 # that each one exists in the real user's home directory.
 log_info "$SECTION" "Checking configuration files..."
 
+check_dir  "${REAL_HOME}/.dotfiles"  "dotfiles bare repo"
 check_file "${REAL_HOME}/.zshrc"     ".zshrc"
 check_file "${REAL_HOME}/.bashrc"    ".bashrc"
 check_file "${REAL_HOME}/.gitconfig" ".gitconfig"
+check_file "${REAL_HOME}/.tmux.conf" ".tmux.conf"
+check_file "${REAL_HOME}/.config/tmux-logging/log.zsh" "tmux-logging zsh hook"
+check_cmd  "tmux-log-toggle"
 check_file "${REAL_HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/displays.xml"   "XFCE displays.xml"
 check_file "${REAL_HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml"  "XFCE xsettings.xml"
 
@@ -365,6 +369,8 @@ add_manual_step "Activate BurpSuite Professional license"
 add_manual_step "Install Bitwarden extension in Firefox"
 add_manual_step "Log into Signal Desktop"
 add_manual_step "Generate SSH keys: ssh-keygen -t ed25519"
+add_manual_step "Add the SSH key to GitHub, then: dotfiles remote set-url origin git@github.com:theo2612/dotfiles.git"
+add_manual_step "Check ~/.pre-dotfiles-backup/ for anything worth keeping, then delete it"
 add_manual_step "Log out and back in for group changes to take effect"
 
 
