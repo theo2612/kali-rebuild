@@ -351,6 +351,13 @@ print_summary() {
     echo ""
     echo "  ${BOLD}========================================${RESET}"
     echo ""
+
+    # Exit status reflects whether anything failed.  print_summary is the
+    # last command in every sub-script, so this becomes the script's exit
+    # code -- which is what install.sh checks.  Without this, a script with
+    # failed items would still exit 0 and install.sh would report the whole
+    # step as "completed successfully".
+    (( fail_count == 0 ))
 }
 
 # ---- ask_continue ----------------------------------------------------------

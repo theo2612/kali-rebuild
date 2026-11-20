@@ -2,8 +2,10 @@
 # Kali Rebuild - BLS Fork Tools
 # =============================================
 # Tools from github.com/blacklanternsecurity
-# Format: repo-name|install-method|notes
-# Install methods: pipx, clone
+# Format: repo-name|install-method|notes|python-version
+# Install methods: pipx, clone, go (clone + build binary into ~/.local/bin)
+# python-version (optional, pipx only): pin a Python version, e.g. 3.12.
+#   pipx downloads a standalone build if the system doesn't have it.
 # =============================================
 
 bbot|pipx|
@@ -13,9 +15,9 @@ certipy|pipx|
 ldap_shell|pipx|
 badsecrets|pipx|
 netexec|pipx|
-webcap|pipx|
+webcap|pipx|pins numpy<2.1 (no wheels for Python 3.13+)|3.12
 trevorspray|pipx|
 responder|clone|not a pip package - clone and run directly
 itwasalladream|pipx|
 pypykatz|pipx|
-kerbrute|clone|Go project - clone and build with go install
+kerbrute|go|Go project - built into ~/.local/bin/kerbrute

@@ -262,6 +262,8 @@ check_cmd "nxc"
 check_cmd "certipy"
 check_cmd "trevorspray"
 check_cmd "pypykatz"
+check_cmd "webcap"
+check_cmd "kerbrute"
 
 
 # ===========================================================================
@@ -369,7 +371,6 @@ add_manual_step "Log into Signal Desktop"
 add_manual_step "Log into Claude Code: run claude, then /login"
 add_manual_step "Activate BurpSuite Professional license"
 add_manual_step "Install Bitwarden extension in Firefox"
-add_manual_step "Log into Signal Desktop"
 add_manual_step "Generate SSH keys: ssh-keygen -t ed25519"
 add_manual_step "Add the SSH key to GitHub, then: dotfiles remote set-url origin git@github.com:theo2612/dotfiles.git"
 add_manual_step "Check ~/.pre-dotfiles-backup/ for anything worth keeping, then delete it"

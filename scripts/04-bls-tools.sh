@@ -105,11 +105,12 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     #                   This is more concise than `echo "$line" | read ...` and
     #                   avoids the subshell that a pipe would create (which
     #                   would make the variables invisible outside the pipe).
-    IFS='|' read -r repo method notes <<< "$line"
+    IFS='|' read -r repo method notes python_ver <<< "$line"
 
     # Trim any stray whitespace from the parsed fields.
     repo="${repo// /}"
     method="${method// /}"
+    python_ver="${python_ver// /}"
 
     log_info "BLS" "Installing ${repo} (method: ${method})${notes:+ -- ${notes}}"
 
@@ -124,8 +125,18 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             # clone the repository and install it, rather than looking the
             # package up on PyPI.  This ensures we get the BLS fork, not the
             # upstream/public version.
-            if run_cmd "BLS" "pipx install ${repo}" \
-                sudo -u "$REAL_USER" pipx install "git+${BLS_ORG}/${repo}.git"; then
+            #
+            # Optional 4th field pins a Python version (e.g. 3.12) for tools
+            # whose dependencies don't support Kali's default Python yet.
+            # --fetch-python=missing makes pipx download a standalone build
+            # of that version if the system doesn't have it -- Kali usually
+            # only ships the newest one or two Python releases.
+            pipx_args=()
+            if [[ -n "$python_ver" ]]; then
+                pipx_args=(--python "$python_ver" --fetch-python=missing)
+            fi
+            if run_cmd "BLS" "pipx install ${repo}${python_ver:+ (Python ${python_ver})}" \
+                sudo -u "$REAL_USER" pipx install "${pipx_args[@]}" "git+${BLS_ORG}/${repo}.git"; then
                 success_count=$((success_count + 1))
             else
                 fail_count=$((fail_count + 1))
@@ -147,6 +158,41 @@ while IFS= read -r line || [[ -n "$line" ]]; do
                 git clone "${BLS_ORG}/${repo}.git" "$clone_dir"; then
                 # Fix ownership so the real user can modify the cloned files.
                 chown -R "${REAL_USER}:${REAL_USER}" "$clone_dir"
+                success_count=$((success_count + 1))
+            else
+                fail_count=$((fail_count + 1))
+            fi
+            ;;
+
+        go)
+            # Go projects: clone into ~/tools/<repo>/, then compile a binary
+            # into ~/.local/bin/ (already on PATH, unlike ~/go/bin).
+            #
+            # The clone and the build are checked SEPARATELY, so a re-run
+            # still builds the binary if an earlier run cloned the repo but
+            # never built it.  The build runs as the real user so the Go
+            # module cache lands in their home, not root's.
+            #
+            # `go -C DIR build` means "cd into DIR, then build" (Go 1.20+).
+            clone_dir="${REAL_HOME}/tools/${repo}"
+            bin_path="${REAL_HOME}/.local/bin/${repo}"
+            if [[ -d "$clone_dir" ]]; then
+                log_skip "BLS" "Clone ${repo}" "already exists"
+            elif run_cmd "BLS" "Clone ${repo}" \
+                sudo -u "$REAL_USER" -H git clone "${BLS_ORG}/${repo}.git" "$clone_dir"; then
+                :
+            else
+                fail_count=$((fail_count + 1))
+                continue
+            fi
+
+            if [[ -x "$bin_path" ]]; then
+                log_skip "BLS" "Build ${repo}" "binary already at ${bin_path}"
+                skip_count=$((skip_count + 1))
+            elif run_cmd "BLS" "Build ${repo}" \
+                sudo -u "$REAL_USER" -H bash -c \
+                    'mkdir -p "$HOME/.local/bin" && go -C "$1" build -o "$2" .' \
+                    _ "$clone_dir" "$bin_path"; then
                 success_count=$((success_count + 1))
             else
                 fail_count=$((fail_count + 1))

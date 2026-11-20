@@ -24,8 +24,8 @@
 # Command substitution -- $(command)
 #   The shell runs 'command' in a subshell, captures its stdout, and
 #   replaces $(...) with that output.  We use this to generate a random
-#   password: BH_PASSWORD=$(openssl rand -base64 24).  The inner command
-#   (openssl rand) runs first, its output becomes the value of BH_PASSWORD.
+#   password: BH_PASSWORD="$(tr ... | head -c 32)".  The inner pipeline
+#   runs first, its output becomes the value of BH_PASSWORD.
 #
 # getent passwd for resolving a user's home directory
 #   getent queries system databases (like /etc/passwd).  The output format is:
@@ -135,49 +135,50 @@ run_cmd "$SECTION" "Copy docker-compose.yml to ${BH_DIR}" \
     cp "${REPO_DIR}/configs/bloodhound/docker-compose.yml" "${BH_DIR}/docker-compose.yml"
 
 # ===========================================================================
-# STEP 4: Generate a random BloodHound admin password
-# ===========================================================================
-# openssl rand -base64 24  generates 24 random bytes and encodes them in
-# base64, producing a 32-character string.  Command substitution $(...) runs
-# the command and captures its stdout into BH_PASSWORD.
-#
-# Why openssl rand?
-#   - It uses a cryptographically secure random number generator (CSPRNG)
-#   - base64 encoding ensures the output contains only printable ASCII
-#     characters (A-Z, a-z, 0-9, +, /), which is safe for JSON strings
-#   - 24 bytes of entropy = 192 bits, which is far more than enough for a
-#     password (128 bits is considered uncrackable by brute force)
-BH_PASSWORD=$(openssl rand -base64 24)
-
-log_info "$SECTION" "Generated random admin password for BloodHound"
-
-# ===========================================================================
-# STEP 5: Create bloodhound.config.json from template
+# STEP 4/5: Create bloodhound.config.json with a random admin password
 # ===========================================================================
 # The template at configs/bloodhound/bloodhound.config.json contains the
-# placeholder string "GENERATED_AT_INSTALL_TIME" in two places:
+# placeholder "GENERATED_AT_INSTALL_TIME" in two places:
 #   - default_admin.password  (the admin user's initial password)
 #   - default_password        (the default password for new users)
 #
-# We use sed to replace that placeholder with the generated password.
+# IMPORTANT -- only do this ONCE.  BloodHound reads default_admin.password
+# only when it first initialises its database.  The database lives in a
+# Docker volume that survives re-runs of this script, so generating a new
+# password on a re-run just prints a password that doesn't work.  If the
+# config already exists we leave it alone.  (To truly start over: run
+# `docker compose down -v` in ~/bloodhound, delete bloodhound.config.json,
+# then re-run this script.)
 #
-# sed 's/OLD/NEW/g' :
-#   s       -- the substitute command
-#   /OLD/   -- the pattern to find (our placeholder string)
-#   /NEW/   -- the replacement text (the generated password)
-#   g       -- global flag: replace ALL occurrences, not just the first
+# Password generation:
+#   tr -dc 'A-Za-z0-9' </dev/urandom  -- read the kernel's CSPRNG and delete
+#                                       (-d) every character NOT (-c) in the
+#                                       set, leaving only letters and digits
+#   head -c 32                        -- keep the first 32 of them
+# 32 alphanumeric chars ~= 190 bits of entropy.  Letters and digits only
+# matters: base64 output can contain "/", which breaks sed's s/// syntax,
+# and "+", which is awkward to type into a login form.
 #
-# The input is read from the template file and the output is redirected (>)
-# to the destination file.  This is a common pattern: read a template,
-# transform it, write the result somewhere else.
-#
-# We use bash -c because run_cmd passes each argument as a separate word to
-# the command, but here we need shell features (the pipe and redirection)
-# that only work inside a shell.
-run_cmd "$SECTION" "Generate bloodhound.config.json with random password" \
-    bash -c "sed 's/GENERATED_AT_INSTALL_TIME/${BH_PASSWORD}/g' \
-        '${REPO_DIR}/configs/bloodhound/bloodhound.config.json' \
-        > '${BH_DIR}/bloodhound.config.json'"
+# The password is deliberately NOT passed through run_cmd: run_cmd writes
+# the full command line into the log file, which any user can read.
+BH_CONFIG="${BH_DIR}/bloodhound.config.json"
+BH_PASSWORD=""
+
+if [[ -f "$BH_CONFIG" ]] && ! grep -q GENERATED_AT_INSTALL_TIME "$BH_CONFIG"; then
+    log_skip "$SECTION" "Generate bloodhound.config.json" \
+        "already exists -- keeping existing admin password"
+else
+    # `set +o pipefail` inside the $(...) subshell: head exits after 32
+    # chars, so tr is killed by SIGPIPE.  That's expected, but with pipefail
+    # it would make the pipeline "fail" and set -e would abort the script.
+    BH_PASSWORD="$(set +o pipefail; tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
+    if sed "s/GENERATED_AT_INSTALL_TIME/${BH_PASSWORD}/g" \
+            "${REPO_DIR}/configs/bloodhound/bloodhound.config.json" > "$BH_CONFIG"; then
+        log_ok "$SECTION" "Generate bloodhound.config.json with random password"
+    else
+        log_fail "$SECTION" "Generate bloodhound.config.json with random password"
+    fi
+fi
 
 # ===========================================================================
 # STEP 6: Fix ownership of the BloodHound directory
@@ -251,15 +252,22 @@ run_cmd "$SECTION" "Start BloodHound containers" \
     docker compose -f "${BH_DIR}/docker-compose.yml" --project-directory "$BH_DIR" up -d
 
 # ===========================================================================
-# STEP 11: Display the generated admin password
+# STEP 11: Display the admin password
 # ===========================================================================
-# This is critical -- the password was randomly generated and exists only in
-# this script's memory and in bloodhound.config.json.  If the user does not
-# save it now, they will need to look inside the config file to find it.
-log_info "$SECTION" "============================================"
-log_info "$SECTION" "BloodHound admin password: ${BH_PASSWORD}"
-log_info "$SECTION" "Save this password! It won't be shown again."
-log_info "$SECTION" "============================================"
+# Printed to the terminal only (plain echo), never to the log file.  It's
+# also stored in ~/bloodhound/bloodhound.config.json (default_admin.password)
+# if you need it later.
+if [[ -n "$BH_PASSWORD" ]]; then
+    echo ""
+    echo "  ${BOLD}============================================${RESET}"
+    echo "  ${BOLD}BloodHound admin password: ${BH_PASSWORD}${RESET}"
+    echo "  Also stored in ${BH_CONFIG} (default_admin.password)"
+    echo "  ${BOLD}============================================${RESET}"
+    echo ""
+    log_info "$SECTION" "BloodHound admin password generated (shown on screen, stored in ${BH_CONFIG})"
+else
+    log_info "$SECTION" "BloodHound admin password unchanged -- see default_admin.password in ${BH_CONFIG}"
+fi
 
 # ===========================================================================
 # STEP 12: Add manual steps

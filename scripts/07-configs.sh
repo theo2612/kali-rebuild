@@ -89,10 +89,23 @@ dotgit()  { as_user git --git-dir="$DOTFILES_DIR" --work-tree="$REAL_HOME" "$@";
 
 log_info "$SECTION" "Installing dotfiles from ${DOTFILES_URL}..."
 
+# The install happens in two phases so that a run which fails partway
+# through can be re-run and pick up where it left off:
+#
+#   Phase A (clone + configure) runs only if ~/.dotfiles doesn't exist.
+#   Phase B (back up + checkout) runs only if the checkout hasn't happened.
+#
+# A bare clone has no index file until the first successful checkout, so
+# "$DOTFILES_DIR/index" exists only once the dotfiles are really in place.
+# (Checking for the directory alone isn't enough: if a run cloned but the
+# checkout failed, every later run would skip the install forever.)
+#
+# Once installed, re-runs skip entirely so they never clobber local edits
+# you haven't pushed.  To update an existing install, run `dotfiles pull`.
+
+# ---- Phase A: clone and configure the bare repo ---------------------------
 if [[ -d "$DOTFILES_DIR" ]]; then
-    # Re-running the script must not clobber local edits you haven't pushed.
-    # To update an existing install, run `dotfiles pull` yourself.
-    log_skip "$SECTION" "Install dotfiles" "already installed at ${DOTFILES_DIR}"
+    log_skip "$SECTION" "Clone dotfiles (bare)" "already cloned at ${DOTFILES_DIR}"
 else
     run_cmd "$SECTION" "Clone dotfiles (bare)" \
         as_user git clone --bare "$DOTFILES_URL" "$DOTFILES_DIR"
@@ -111,17 +124,28 @@ else
     DOTFILES_BRANCH="$(dotgit symbolic-ref --short HEAD)"
     run_cmd "$SECTION" "Track origin/${DOTFILES_BRANCH}" \
         dotgit branch -q --set-upstream-to="origin/${DOTFILES_BRANCH}" "$DOTFILES_BRANCH"
+fi
 
+# ---- Phase B: back up conflicting files and check out ---------------------
+if [[ -f "${DOTFILES_DIR}/index" ]]; then
+    log_skip "$SECTION" "Check out dotfiles" "already checked out into ${REAL_HOME}"
+else
     # ls-tree lists every file path the repo tracks (e.g. .zshrc,
     # .local/bin/tmux-log-start).  For each one that already exists in ~,
     # move it into the backup dir, keeping its folder structure.
+    #
+    # --full-tree is REQUIRED here.  The work tree is $HOME, and this script
+    # usually runs from ~/kali-rebuild -- a subdirectory of the work tree.
+    # Without --full-tree, ls-tree only lists files under the current
+    # directory (i.e. nothing), no backups happen, and checkout then aborts
+    # on Kali's stock ~/.zshrc.
     while IFS= read -r file; do
         if [[ -e "${REAL_HOME}/${file}" || -L "${REAL_HOME}/${file}" ]]; then
             as_user mkdir -p "${BACKUP_DIR}/$(dirname "$file")"
             run_cmd "$SECTION" "Back up existing ~/${file}" \
                 as_user mv "${REAL_HOME}/${file}" "${BACKUP_DIR}/${file}"
         fi
-    done < <(dotgit ls-tree -r --name-only HEAD)
+    done < <(dotgit ls-tree --full-tree -r --name-only HEAD)
 
     run_cmd "$SECTION" "Check out dotfiles into ${REAL_HOME}" \
         dotgit checkout -q
